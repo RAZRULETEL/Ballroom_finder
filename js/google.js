@@ -125,14 +125,14 @@ const ROW_STEP_SIZE = 100;
  * Print the names and majors of students in a sample spreadsheet:
  * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
  */
-async function listNames(callback = async () => {}, sheet = 'Лист1', column = 'A') {
+async function listNames(callback = async () => {}, id, sheet = 'Лист1', column = 'A') {
 		let counter = 0;
 		let startRow = 1;
 		while(true) {
 			let response;
 			try {
 				response = await gapi.client.sheets.spreadsheets.values.get({
-					spreadsheetId: tableIdInput.value,
+					spreadsheetId: id,
 					range: sheet + `!${column}${startRow}:${column}${startRow + ROW_STEP_SIZE - 1}`,
 				});
 			} catch (err) {
@@ -152,7 +152,7 @@ async function listNames(callback = async () => {}, sheet = 'Лист1', column 
 				}
 				return counter;
 			}
-			addOrUpdateId(tableIdInput.value);
+			addOrUpdateId(id);
 			console.log(response);
 			const range = response.result;
 			if (!range || !range.values || range.values.length == 0) {
@@ -173,7 +173,7 @@ async function listNames(callback = async () => {}, sheet = 'Лист1', column 
 async function createList(name = 'Бальники', id, autoRename = false, retry = 0) {
 	try {
 		const sheet = await gapi.client.sheets.spreadsheets.batchUpdate({
-			spreadsheetId: tableIdInput.value,
+			spreadsheetId: id,
 			requests: [
 				{
 					"addSheet": {
@@ -217,13 +217,13 @@ function addOrUpdateId(id){
 async function writeValues(list, id, data){
 	try {
 		const sheet = await gapi.client.sheets.spreadsheets.values.update({
-			spreadsheetId: tableIdInput.value,
+			spreadsheetId: id,
 			range: `${list}!A1:G`,
 			valueInputOption: 'RAW',
 			majorDimension: 'ROWS',
 			values: data
 		});
-		console.log(sheet)
+		console.log(sheet);
 	}catch (e) {
 		console.error(e);
 		switch (e.status) {

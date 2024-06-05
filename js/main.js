@@ -24,6 +24,7 @@ tableIdInput.addEventListener("input", async (e) => {
 			tableLink.style.color = "black";
 			tableLink.style.pointerEvents = "all";
 			addOrUpdateId(match[0]);
+			TABLE_ID = match[0];
 		} else {
 			tableIdInput.style.color = "red";
 
@@ -138,11 +139,10 @@ async function namesProcessorFactory(e){
 					resolve();
 				}
 		}, 250);
-
 		count = await listNames(async (e) => {
 			count += e.length;
 			requestQueue.push(...e);
-		});
+		}, TABLE_ID);
 		listingEnded = true;
 	})
 
