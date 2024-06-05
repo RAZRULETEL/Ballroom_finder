@@ -1,13 +1,7 @@
 const domParser = new DOMParser();
 
 async function parseNameTadance(name){
-	let response = await fetch("https://thingproxy.freeboard.io/fetch/https://tadance.ru/Athlete/SearchAthletes", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json"
-		},
-		body: JSON.stringify({pageNum: 1, term: name})
-	});
+	let response = await fetchSeProxy(name);
 	const html = (await response.json()).viewSearchResult;
 	if(!html) return;
 
@@ -36,4 +30,29 @@ async function parseNameTadance(name){
 		return result;
 	})//.filter(e => e[1].startsWith(name));
 	return people;
+}
+
+function fetchThingProxy(name){
+	return fetch("https://thingproxy.freeboard.io/fetch/https://tadance.ru/Athlete/SearchAthletes", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({pageNum: 1, term: name})
+	});
+}
+
+function fetchSeProxy(name){
+	return fetch("https://se.ifmo.ru/~s373739/proxy.php", {
+		method: "POST",
+		headers: {
+			"Content-type": "application/json",
+		},
+		body: JSON.stringify({
+			"cors": "https://tadance.ru/Athlete/SearchAthletes",
+			"method": "POST",
+			"pageNum": 1,
+			"term": name
+		})
+	});
 }
