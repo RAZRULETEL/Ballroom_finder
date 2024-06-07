@@ -73,12 +73,12 @@ function mainLoaded(){
  */
 function maybeEnableButtons() {
 	if (gapiInited && gisInited && mainInited) {
-		resolveInit();
 		if(localStorage.getItem(TOKEN_LOCAL_STORAGE_NAME)){
 			gapi.client.setToken(JSON.parse(localStorage.getItem(TOKEN_LOCAL_STORAGE_NAME)));
 			setAuthorized();
 		}else
 			setUnauthorized();
+		resolveInit();
 	}
 }
 
@@ -122,8 +122,14 @@ function handleSignoutClick() {
 
 const ROW_STEP_SIZE = 100;
 /**
- * Print the names and majors of students in a sample spreadsheet:
- * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+ * Function: listNames
+ * Description: Print the names and majors of students in a sample spreadsheet.
+ * Parameters:
+ * @param callback {function} async function to handle the retrieved data
+ * @param id {string} spreadsheet ID to fetch data from
+ * @param sheet {string} name of the sheet in the spreadsheet
+ * @param column {string} column to fetch data from
+ * @return {Promise<number>} number of records found
  */
 async function listNames(callback = async () => {}, id, sheet = 'Лист1', column = 'A') {
 		let counter = 0;
@@ -170,6 +176,15 @@ async function listNames(callback = async () => {}, id, sheet = 'Лист1', col
 		}
 }
 
+/**
+ * Creates a new sheet in a Google Spreadsheet with the given name.
+ *
+ * @param {string} name name of the sheet to be created (default: 'Бальники')
+ * @param {string} id ID of the Google Spreadsheet
+ * @param {boolean} autoRename if true, renames the sheet if a sheet with the same name already exists (default: false)
+ * @param {number} retry number of times the function has retried creating the sheet (default: 0)
+ * @return {Promise<string|null>} the title of the created sheet, or null if an error occurred
+ */
 async function createList(name = 'Бальники', id, autoRename = false, retry = 0) {
 	try {
 		const sheet = await gapi.client.sheets.spreadsheets.batchUpdate({
@@ -206,6 +221,13 @@ async function createList(name = 'Бальники', id, autoRename = false, ret
 		return null;
 	}
 }
+
+/**
+ * Updates or adds an ID to the local storage.
+ *
+ * @param {string} id ID to be updated or added
+ * @return {void}
+ */
 function addOrUpdateId(id){
 	if(!id)
 		return;
@@ -214,6 +236,14 @@ function addOrUpdateId(id){
 	localStorage.setItem('ids', JSON.stringify(ids));
 }
 
+/**
+ * Updates values in a Google Sheets spreadsheet.
+ *
+ * @param {string} list name of the list in the spreadsheet
+ * @param {string} id ID of the spreadsheet
+ * @param {Array} data data values to update in the spreadsheet
+ * @return {Promise<null|void>} promise that resolves when the update is completed
+ */
 async function writeValues(list, id, data){
 	try {
 		const sheet = await gapi.client.sheets.spreadsheets.values.update({
@@ -241,6 +271,12 @@ async function writeValues(list, id, data){
 	}
 }
 
+/**
+ * Retrieves information about a Google Sheets spreadsheet.
+ *
+ * @param {string} id ID of the spreadsheet.
+ * @return {Promise<Object|string|null>} object containing the title, lists, and ID of the spreadsheet, or an error message if the request fails.
+ */
 async function getSheetInfo(id){
 	await initPromise;
 	try {
