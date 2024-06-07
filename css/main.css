@@ -37,7 +37,7 @@ label, input, select, button {
 	user-select: none;
 }
 
-#tip_description {
+.description {
 	top: -10000px;
 	position: absolute;
 	pointer-events: none;

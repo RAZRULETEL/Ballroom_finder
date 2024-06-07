@@ -77,21 +77,6 @@ listsRefresh.addEventListener("click", async (e) => {
 	listsRefresh.disabled = false;
 });
 
-const description = document.getElementById("tip_description");
-const tips = document.getElementsByClassName("info");
-for (let tip of tips) {
-	tip.addEventListener("mouseenter", (e) => {
-		description.innerHTML = e.currentTarget.getAttribute("data-title");
-		const rect = e.currentTarget.getBoundingClientRect();
-		description.style.top = (rect.y - description.getBoundingClientRect().height) + "px";
-		description.style.left = (rect.x + rect.width) + "px";
-	})
-	tip.addEventListener("mouseout", (e) => {
-		description.style.top = "-100000px";
-	})
-}
-
-
 function setAuthorized() {
 	const time = JSON.parse(localStorage.getItem(TOKEN_LOCAL_STORAGE_NAME)).expires_in - Date.now();
 	authButton.innerText = `Авторизованы ещё ${dateFormatter.format(time)}`
@@ -194,7 +179,8 @@ async function namesProcessorFactory(e){
 	})
 
 	const result = await writeValues(listName || DEFAULT_RESULT_SHEET, TABLE_ID, people, APPEND_VALUES);
-	resultMessage.innerText = `Новые данные добавлены в ${result.updatedRange}.`;
+	if(APPEND_VALUES)
+		resultMessage.innerText = `Новые данные добавлены в ${result.updatedRange}.`;
 
 	runButton.disabled = false;
 	runButton.innerText = "Запустить";
