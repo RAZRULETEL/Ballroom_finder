@@ -1,7 +1,8 @@
-let state_checker;
 let authInterval;
 
 const tableLink = document.getElementById("table_link");
+const listSelect = document.getElementById("sheet_select");
+const listsRefresh = document.getElementById("refresh");
 
 const dateFormatter = new Intl.DateTimeFormat('en-GB', {
 	minute: '2-digit',
@@ -12,6 +13,7 @@ let TABLE_ID = "";
 
 tableIdInput.addEventListener("input", async (e) => {
 	const match = e.currentTarget.value.match(/(?<=docs\.google\.com\/spreadsheets\/d\/)[\w\d]+(?=\/)/) || e.currentTarget.value.match(/^[\w\d]{44}$/i);
+	listSelect.disabled = true;
 	if (match) {
 		tableIdInput.disabled = true;
 		const info = await getSheetInfo(match[0]);
@@ -23,8 +25,12 @@ tableIdInput.addEventListener("input", async (e) => {
 			tableLink.innerHTML = info.title;
 			tableLink.style.color = "black";
 			tableLink.style.pointerEvents = "all";
+
 			addOrUpdateId(match[0]);
 			TABLE_ID = match[0];
+
+			listSelect.replaceChildren(...info.lists.map(sheet => new Option(sheet, sheet)));
+			listSelect.disabled = false;
 		} else {
 			tableIdInput.style.color = "red";
 
@@ -51,6 +57,23 @@ if (localStorage.getItem('ids')) {
 	tableIdInput.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
+listsRefresh.addEventListener("click", async (e) => {
+	if (!TABLE_ID) return;
+	listsRefresh.disabled = true;
+	listSelect.disabled = true;
+	const infoOption = new Option("Обновление...");
+	listSelect.replaceChildren(infoOption);
+	const info = await getSheetInfo(TABLE_ID);
+	if (info && typeof info === "object") {
+		tableLink.innerHTML = info.title;
+		listSelect.replaceChildren(...info.lists.map(sheet => new Option(sheet, sheet)));
+		listSelect.disabled = false;
+	}else{
+		infoOption.innerText = info || "Неизвестная ошибка.";
+	}
+	listsRefresh.disabled = false;
+});
+
 const description = document.getElementById("tip_description");
 const tips = document.getElementsByClassName("info");
 for (let tip of tips) {
@@ -67,6 +90,7 @@ for (let tip of tips) {
 
 
 function setAuthorized() {
+	tableIdInput.dispatchEvent(new Event('input', { bubbles: true }));
 	const time = JSON.parse(localStorage.getItem(TOKEN_LOCAL_STORAGE_NAME)).expires_in - Date.now();
 	authButton.innerText = `Авторизованы ещё ${dateFormatter.format(time)}`
 	clearInterval(authInterval);
@@ -102,6 +126,15 @@ async function namesProcessorFactory(e){
 	runButton.disabled = true;
 	runButton.innerText = "Обработка...";
 
+	const TABLE_LIST = listSelect.value;
+
+	if(!TABLE_LIST){
+		resultMessage.innerText = "Не выбран лист таблицы.";
+		runButton.disabled = false;
+		runButton.innerText = "Запустить";
+		return;
+	}
+
 	const listName = await createList('Бальники', TABLE_ID, false) || 'Бальники';// TODO
 	if(!listName){
 		runButton.disabled = false;
@@ -111,7 +144,7 @@ async function namesProcessorFactory(e){
 
 	const people = [];
 
-	await new Promise(async (resolve, reject) => {
+	await new Promise(async (resolve) => {
 		const progressMessage = document.getElementById('process_state');
 		const progressBar = document.getElementById('process_bar');
 
@@ -142,7 +175,7 @@ async function namesProcessorFactory(e){
 		count = await listNames(async (e) => {
 			count += e.length;
 			requestQueue.push(...e);
-		}, TABLE_ID);
+		}, TABLE_ID, TABLE_LIST);
 		listingEnded = true;
 	})
 

@@ -26,6 +26,9 @@
   <!-- Add your site or application content here -->
   <div>
 	  <label>Ссылка на таблицу: <a id="table_link" href="#" target="_blank"></a><br> <input id="table_id" type="text" style="width: -webkit-fill-available;"></label>
+	  <div><label>Выберите лист: <select id="sheet_select" disabled>
+		  <option value="-1" selected disabled>Лист не выбран</option>
+	  </select></label><button id="refresh"><img src="./img/sync.png" alt="Обновить"></button></div>
 	  <label><input type="checkbox" disabled>Добавлять в конец <span class="info" data-title="Добавлять новые строки после существующих, если лист с результатами уже существует и выключено создание новых листов (найстрока ниже).">?</span></label>
 	  <label><input type="checkbox" disabled>Создавать новый лист <span class="info" data-title="Создавать новый лист, если лист с результатами уже существует, название будет в виде '&lt; name&gt; (1)'">?</span></label>
 	  <select disabled>

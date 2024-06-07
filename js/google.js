@@ -275,7 +275,7 @@ async function writeValues(list, id, data){
  * Retrieves information about a Google Sheets spreadsheet.
  *
  * @param {string} id ID of the spreadsheet.
- * @return {Promise<Object|string|null>} object containing the title, lists, and ID of the spreadsheet, or an error message if the request fails.
+ * @return {Promise<{title: string, lists: string[], id: string}|string|null>} object containing the title, lists, and ID of the spreadsheet, or an error message if the request fails.
  */
 async function getSheetInfo(id){
 	await initPromise;

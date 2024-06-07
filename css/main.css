@@ -70,9 +70,26 @@ a {
 }
 
 #process_bar[value="0"] {
-	/*display: none;*/
+	display: none;
 }
 
 #process_bar{
 	width: 100%;
+}
+
+#refresh{
+	padding: 0 10px;
+	background: none;
+	border: none;
+	cursor: pointer;
+}
+
+#refresh img{
+	height: 20px;
+	pointer-events: none;
+}
+
+#refresh:disabled img{
+	transition: 100s;
+	transform: rotate(36000deg);
 }
