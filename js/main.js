@@ -3,6 +3,7 @@ let authInterval;
 const tableLink = document.getElementById("table_link");
 const listSelect = document.getElementById("sheet_select");
 const listsRefresh = document.getElementById("refresh");
+const renameCheckbox = document.getElementById("auto_rename");
 
 const dateFormatter = new Intl.DateTimeFormat('en-GB', {
 	minute: '2-digit',
@@ -54,7 +55,6 @@ if (localStorage.getItem('ids')) {
 		if(id[1] > max[1]) max = id;
 	}
 	tableIdInput.value = max[0];
-	tableIdInput.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
 listsRefresh.addEventListener("click", async (e) => {
@@ -90,24 +90,28 @@ for (let tip of tips) {
 
 
 function setAuthorized() {
-	tableIdInput.dispatchEvent(new Event('input', { bubbles: true }));
 	const time = JSON.parse(localStorage.getItem(TOKEN_LOCAL_STORAGE_NAME)).expires_in - Date.now();
 	authButton.innerText = `Авторизованы ещё ${dateFormatter.format(time)}`
+
 	clearInterval(authInterval);
-	if (time < 0)
+	if (time < 0) {
 		setUnauthorized();
-	else {
-		authButton.disabled = true;
-		authButton.style.background = "lightgreen";
-		runButton.disabled = false;
-		authInterval = setInterval(() => {
-			const time = JSON.parse(localStorage.getItem(TOKEN_LOCAL_STORAGE_NAME)).expires_in - Date.now();
-			if (time < 0)
-				setUnauthorized()
-			else
-				authButton.innerText = `Авторизованы ещё ${dateFormatter.format(time)}`
-		}, 1000)
+		return;
 	}
+
+	tableIdInput.dispatchEvent(new Event('input', { bubbles: true }));
+	runButton.disabled = false;
+
+	authButton.disabled = true;
+	authButton.style.background = "lightgreen";
+	runButton.disabled = false;
+	authInterval = setInterval(() => {
+		const time = JSON.parse(localStorage.getItem(TOKEN_LOCAL_STORAGE_NAME)).expires_in - Date.now();
+		if (time < 0)
+			setUnauthorized()
+		else
+			authButton.innerText = `Авторизованы ещё ${dateFormatter.format(time)}`
+	}, 1000)
 }
 
 function setUnauthorized() {
@@ -115,7 +119,8 @@ function setUnauthorized() {
 	authButton.innerText = "Авторизоваться";
 	authButton.disabled = false;
 	authButton.style.background = "";
-	// runButton.disabled = true;
+	runButton.disabled = true;
+	tableIdInput.disabled = true;
 }
 
 authButton.addEventListener("click", handleAuthClick);
@@ -123,6 +128,8 @@ runButton.addEventListener("click", namesProcessorFactory);
 
 
 async function namesProcessorFactory(e){
+	if(!TABLE_ID) return;
+
 	runButton.disabled = true;
 	runButton.innerText = "Обработка...";
 
@@ -135,12 +142,13 @@ async function namesProcessorFactory(e){
 		return;
 	}
 
-	const listName = await createList('Бальники', TABLE_ID, false) || 'Бальники';// TODO
+	const listName = await createList('Бальники', TABLE_ID, renameCheckbox.checked);// TODO
 	if(!listName){
 		runButton.disabled = false;
 		runButton.innerText = "Запустить";
 		return;
 	}
+	resultMessage.innerText = `Создан лист '"${listName}"'.`;
 
 	const people = [];
 
@@ -164,13 +172,13 @@ async function namesProcessorFactory(e){
 					requestQueue.push(name);
 					console.warn(e, name);
 				}
-			}else
-				if (listingEnded){
-					clearInterval(requestScheduler);
-					progressMessage.innerText = `Обработка звершена. Найдено ${people.length} спортсменов.`;
-					progressBar.value = '100';
-					resolve();
-				}
+			}
+			if (requestQueue.length === 0 && listingEnded){
+				clearInterval(requestScheduler);
+				progressMessage.innerText = `Обработка звершена. Найдено ${people.length} спортсменов.`;
+				progressBar.value = '100';
+				resolve();
+			}
 		}, 250);
 		count = await listNames(async (e) => {
 			count += e.length;

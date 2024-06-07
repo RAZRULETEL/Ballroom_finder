@@ -73,9 +73,13 @@ function mainLoaded(){
  */
 function maybeEnableButtons() {
 	if (gapiInited && gisInited && mainInited) {
-		if(localStorage.getItem(TOKEN_LOCAL_STORAGE_NAME)){
-			gapi.client.setToken(JSON.parse(localStorage.getItem(TOKEN_LOCAL_STORAGE_NAME)));
-			setAuthorized();
+		const token = localStorage.getItem(TOKEN_LOCAL_STORAGE_NAME);
+		if(token){
+			gapi.client.setToken(JSON.parse(token));
+			if(JSON.parse(token).expires_in < Date.now())
+				setAuthorized();
+			else
+				setUnauthorized();
 		}else
 			setUnauthorized();
 		resolveInit();
@@ -208,6 +212,9 @@ async function createList(name = 'Бальники', id, autoRename = false, ret
 
 		console.error(e);
 		switch (e.status) {
+			case 400:
+				resultMessage.innerText = "Ошибка создания листа для результатов.\n" + e.result.error.message.substring("Invalid requests[0].addSheet: ".length);
+				break;
 			case 401:
 				resultMessage.innerText = 'Пожалуйста авторизуйтесь.';
 				break;
