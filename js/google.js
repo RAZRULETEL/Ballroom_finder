@@ -76,7 +76,7 @@ function maybeEnableButtons() {
 		const token = localStorage.getItem(TOKEN_LOCAL_STORAGE_NAME);
 		if(token){
 			gapi.client.setToken(JSON.parse(token));
-			if(JSON.parse(token).expires_in < Date.now())
+			if(JSON.parse(token).expires_in > Date.now())
 				setAuthorized();
 			else
 				setUnauthorized();
@@ -135,7 +135,7 @@ const ROW_STEP_SIZE = 100;
  * @param column {string} column to fetch data from
  * @return {Promise<number>} number of records found
  */
-async function listNames(callback = async () => {}, id, sheet = 'Лист1', column = 'A') {
+async function listNames(callback = async () => {}, id, sheet, column = 'A') {
 		let counter = 0;
 		let startRow = 1;
 		while(true) {
@@ -183,13 +183,13 @@ async function listNames(callback = async () => {}, id, sheet = 'Лист1', col
 /**
  * Creates a new sheet in a Google Spreadsheet with the given name.
  *
- * @param {string} name name of the sheet to be created (default: 'Бальники')
+ * @param {string} name name of the sheet to be created
  * @param {string} id ID of the Google Spreadsheet
  * @param {boolean} autoRename if true, renames the sheet if a sheet with the same name already exists (default: false)
- * @param {number} retry number of times the function has retried creating the sheet (default: 0)
+ * @param {number} retry number of times the function has retried creating the sheet (do not set it manually)
  * @return {Promise<string|null>} the title of the created sheet, or null if an error occurred
  */
-async function createList(name = 'Бальники', id, autoRename = false, retry = 0) {
+async function createList(name, id, autoRename = false, retry = 0) {
 	try {
 		const sheet = await gapi.client.sheets.spreadsheets.batchUpdate({
 			spreadsheetId: id,
@@ -249,11 +249,12 @@ function addOrUpdateId(id){
  * @param {string} list name of the list in the spreadsheet
  * @param {string} id ID of the spreadsheet
  * @param {Array} data data values to update in the spreadsheet
- * @return {Promise<null|void>} promise that resolves when the update is completed
+ * @param {boolean} append if true, appends the data to the end of the list
+ * @return {Promise<null|Object>} promise that resolves when the update is completed
  */
-async function writeValues(list, id, data){
+async function writeValues(list, id, data, append = false){
 	try {
-		const sheet = await gapi.client.sheets.spreadsheets.values.update({
+		const sheet = await gapi.client.sheets.spreadsheets.values[append ? 'append' : 'update']({
 			spreadsheetId: id,
 			range: `${list}!A1:G`,
 			valueInputOption: 'RAW',
@@ -261,6 +262,7 @@ async function writeValues(list, id, data){
 			values: data
 		});
 		console.log(sheet);
+		return sheet.result.updates;
 	}catch (e) {
 		console.error(e);
 		switch (e.status) {
@@ -271,7 +273,7 @@ async function writeValues(list, id, data){
 				resultMessage.innerText = 'Таблица не найдена, проверьте ссылку.';
 				break;
 			default:
-				resultMessage.innerText = 'Произошла ошибка при созддании листа в таблице. Свяжитесь с разработчиком.\nCode: ' + err.status;
+				resultMessage.innerText = 'Произошла ошибка при созддании листа в таблице. Свяжитесь с разработчиком.\nCode: ' + e.status;
 				break;
 		}
 		return null;

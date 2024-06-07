@@ -1,9 +1,12 @@
+const DEFAULT_RESULT_SHEET = 'Бальники';
+
 let authInterval;
 
 const tableLink = document.getElementById("table_link");
 const listSelect = document.getElementById("sheet_select");
 const listsRefresh = document.getElementById("refresh");
 const renameCheckbox = document.getElementById("auto_rename");
+const appendCheckbox = document.getElementById("append");
 
 const dateFormatter = new Intl.DateTimeFormat('en-GB', {
 	minute: '2-digit',
@@ -134,6 +137,7 @@ async function namesProcessorFactory(e){
 	runButton.innerText = "Обработка...";
 
 	const TABLE_LIST = listSelect.value;
+	const APPEND_VALUES = appendCheckbox.checked;
 
 	if(!TABLE_LIST){
 		resultMessage.innerText = "Не выбран лист таблицы.";
@@ -142,13 +146,13 @@ async function namesProcessorFactory(e){
 		return;
 	}
 
-	const listName = await createList('Бальники', TABLE_ID, renameCheckbox.checked);// TODO
-	if(!listName){
+	const listName = await createList(DEFAULT_RESULT_SHEET, TABLE_ID, renameCheckbox.checked);// TODO
+	if(!listName && !APPEND_VALUES){
 		runButton.disabled = false;
 		runButton.innerText = "Запустить";
 		return;
-	}
-	resultMessage.innerText = `Создан лист '"${listName}"'.`;
+	}else
+		resultMessage.innerText = `Создан лист '"${listName}"'.`;
 
 	const people = [];
 
@@ -157,10 +161,11 @@ async function namesProcessorFactory(e){
 		const progressBar = document.getElementById('process_bar');
 
 		let listingEnded = false;
-		let count = 0,  processed = 0;
+		let count = 0,  processed = 0, processing = 0;
 		const requestQueue = [];
 		const requestScheduler = setInterval(async function () {
 			const name = requestQueue.shift();
+			processing++;
 			if (name){
 				try {
 					const result = await parseNameTadance(name);
@@ -173,7 +178,8 @@ async function namesProcessorFactory(e){
 					console.warn(e, name);
 				}
 			}
-			if (requestQueue.length === 0 && listingEnded){
+			processing--;
+			if (requestQueue.length === 0 && listingEnded && processing === 0) {
 				clearInterval(requestScheduler);
 				progressMessage.innerText = `Обработка звершена. Найдено ${people.length} спортсменов.`;
 				progressBar.value = '100';
@@ -187,7 +193,8 @@ async function namesProcessorFactory(e){
 		listingEnded = true;
 	})
 
-	await writeValues(listName, TABLE_ID, people);
+	const result = await writeValues(listName || DEFAULT_RESULT_SHEET, TABLE_ID, people, APPEND_VALUES);
+	resultMessage.innerText = `Новые данные добавлены в ${result.updatedRange}.`;
 
 	runButton.disabled = false;
 	runButton.innerText = "Запустить";
