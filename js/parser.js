@@ -1,3 +1,6 @@
+const NAME_COLUMN = 1;
+const AGE_COLUMN = 4;
+
 const domParser = new DOMParser();
 
 async function parseNameTadance(name){
@@ -27,8 +30,9 @@ async function parseNameTadance(name){
 			result.push((ageClubCity[0].match(/\d+/) || [null])[0], null, ageClubCity[ageClubCity.length - 1].trim());
 		else
 			result.push(ageClubCity[0].match(/\d+/)[0], ageClubCity[1].trim(), ageClubCity.slice(2).join(",").trim());
+		if(!isNaN(result[AGE_COLUMN])) result[AGE_COLUMN] = +result[AGE_COLUMN];
 		return result;
-	})//.filter(e => e[1].startsWith(name));
+	})
 	return people;
 }
 

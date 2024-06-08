@@ -135,7 +135,7 @@ const ROW_STEP_SIZE = 100;
  * @param column {string} column to fetch data from
  * @return {Promise<number>} number of records found
  */
-async function listNames(callback = async () => {}, id, sheet, column = 'A') {
+async function listNames(callback = () => {}, id, sheet, column = 'A') {
 		let counter = 0;
 		let startRow = 1;
 		while(true) {
@@ -175,7 +175,7 @@ async function listNames(callback = async () => {}, id, sheet, column = 'A') {
 			const output = range.values.map(e => e[0]).filter(e => e);
 			counter += output.length;
 			resultMessage.innerText = `Найдено ${counter} записей.`;
-			await callback(output);
+			callback(output);
 			startRow += ROW_STEP_SIZE;
 		}
 }

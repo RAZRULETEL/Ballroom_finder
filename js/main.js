@@ -1,19 +1,26 @@
 const DEFAULT_RESULT_SHEET = 'Бальники';
 
-let authInterval;
-
 const tableLink = document.getElementById("table_link");
 const listSelect = document.getElementById("sheet_select");
 const listsRefresh = document.getElementById("refresh");
 const renameCheckbox = document.getElementById("auto_rename");
 const appendCheckbox = document.getElementById("append");
+const ageFilterSelect = document.getElementById("age_filter");
 
 const dateFormatter = new Intl.DateTimeFormat('en-GB', {
 	minute: '2-digit',
 	second: '2-digit',
 });
 
+const FILTERS = {
+	'none': _ => true,
+	'bachelor': e => e[AGE_COLUMN] > 16 && e[AGE_COLUMN] < 26,
+	'master': e => e[AGE_COLUMN] > 20 && e[AGE_COLUMN] < 30,
+	'phd': e => e[AGE_COLUMN] > 22 && e[AGE_COLUMN] < 32,
+}
+
 let TABLE_ID = "";
+let authInterval;
 
 tableIdInput.addEventListener("input", async (e) => {
 	const match = e.currentTarget.value.match(/(?<=docs\.google\.com\/spreadsheets\/d\/)[\w\d]+(?=\/)/) || e.currentTarget.value.match(/^[\w\d]{44}$/i);
@@ -77,6 +84,9 @@ listsRefresh.addEventListener("click", async (e) => {
 	listsRefresh.disabled = false;
 });
 
+authButton.addEventListener("click", handleAuthClick);
+runButton.addEventListener("click", handleRunClick);
+
 function setAuthorized() {
 	const time = JSON.parse(localStorage.getItem(TOKEN_LOCAL_STORAGE_NAME)).expires_in - Date.now();
 	authButton.innerText = `Авторизованы ещё ${dateFormatter.format(time)}`
@@ -111,11 +121,7 @@ function setUnauthorized() {
 	tableIdInput.disabled = true;
 }
 
-authButton.addEventListener("click", handleAuthClick);
-runButton.addEventListener("click", namesProcessorFactory);
-
-
-async function namesProcessorFactory(e){
+async function handleRunClick(e){
 	if(!TABLE_ID) return;
 
 	runButton.disabled = true;
@@ -131,15 +137,15 @@ async function namesProcessorFactory(e){
 		return;
 	}
 
-	const listName = await createList(DEFAULT_RESULT_SHEET, TABLE_ID, renameCheckbox.checked);// TODO
+	const listName = await createList(DEFAULT_RESULT_SHEET, TABLE_ID, renameCheckbox.checked);
 	if(!listName && !APPEND_VALUES){
 		runButton.disabled = false;
 		runButton.innerText = "Запустить";
 		return;
 	}else
-		resultMessage.innerText = `Создан лист '"${listName}"'.`;
+		if(listName) resultMessage.innerText = `Создан лист '"${listName}"'.`;
 
-	const people = [];
+	let people = [];
 
 	await new Promise(async (resolve) => {
 		const progressMessage = document.getElementById('process_state');
@@ -155,7 +161,7 @@ async function namesProcessorFactory(e){
 				try {
 					const result = await parseNameTadance(name);
 					if(result)
-						people.push(...result);
+						people.push(...result.filter(e => e[NAME_COLUMN].includes(name)));
 					progressMessage.innerText = `Обработано ${processed++} имён из ${count}`;
 					progressBar.value = `${(processed / count) * 100}`;
 				}catch (e){
@@ -171,12 +177,15 @@ async function namesProcessorFactory(e){
 				resolve();
 			}
 		}, 250);
-		count = await listNames(async (e) => {
+		count = await listNames((e) => {
 			count += e.length;
 			requestQueue.push(...e);
 		}, TABLE_ID, TABLE_LIST);
 		listingEnded = true;
-	})
+	});
+
+	people = people.filter(e => FILTERS[ageFilterSelect.value](e));
+	document.getElementById('process_state').innerText = `Обработка звершена. Найдено ${people.length} спортсменов.`;
 
 	const result = await writeValues(listName || DEFAULT_RESULT_SHEET, TABLE_ID, people, APPEND_VALUES);
 	if(APPEND_VALUES)
