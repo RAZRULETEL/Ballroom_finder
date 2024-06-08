@@ -25,7 +25,7 @@
 
   <!-- Add your site or application content here -->
   <div>
-	  <label>Ссылка на таблицу: <a id="table_link" href="#" target="_blank" style="text-wrap: nowrap;"></a><br> <input id="table_id" type="text" style="width: -webkit-fill-available;"></label>
+	  <label>Ссылка на таблицу: <a id="table_link" href="#" target="_blank" class="table_link"></a><br> <input id="table_id" type="text" style="width: -webkit-fill-available;" autocomplete="off"></label>
 	  <div><label>Выберите лист: <select id="sheet_select" disabled>
 		  <option value="-1" selected disabled>Лист не выбран</option>
 	  </select></label><button id="refresh"><img src="./img/sync.png" alt="Обновить"></button></div>
@@ -49,10 +49,11 @@
   <script src="js/plugins.js"></script>
   <script src="js/google.js"></script>
   <script src="js/parser.js"></script>
+  <script src="js/ids.js"></script>
 
-  <script async defer src="js/main.js" onLoad="mainLoaded()"></script>
   <script async defer src="https://apis.google.com/js/api.js" onLoad="gapiLoaded()"></script>
   <script async defer src="https://accounts.google.com/gsi/client" onLoad="gisLoaded()"></script>
+  <script async defer src="js/main.js" onLoad="mainLoaded()"></script>
 
   <script async defer src="js/tips.js"></script>
 </body>

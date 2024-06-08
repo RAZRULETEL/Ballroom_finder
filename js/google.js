@@ -162,7 +162,6 @@ async function listNames(callback = () => {}, id, sheet, column = 'A') {
 				}
 				return counter;
 			}
-			addOrUpdateId(id);
 			console.log(response);
 			const range = response.result;
 			if (!range || !range.values || range.values.length == 0) {
@@ -227,20 +226,6 @@ async function createList(name, id, autoRename = false, retry = 0) {
 		}
 		return null;
 	}
-}
-
-/**
- * Updates or adds an ID to the local storage.
- *
- * @param {string} id ID to be updated or added
- * @return {void}
- */
-function addOrUpdateId(id){
-	if(!id)
-		return;
-	const ids = JSON.parse(localStorage.getItem('ids')) || {};
-	ids[id] = Date.now();
-	localStorage.setItem('ids', JSON.stringify(ids));
 }
 
 /**

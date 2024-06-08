@@ -57,7 +57,18 @@ a {
 	margin: auto;
 }
 
-#table_link:not([href='#']) {
+.table_link{
+	text-wrap: nowrap;
+	color: green;
+}
+
+.table_link img {
+	height: 20px;
+	pointer-events: none;
+	margin: -3px 0 0 5px;
+}
+
+.table_link:not([href='#']) {
 	text-decoration: none;
 	font-size: inherit;
 	border-radius: 15px;
@@ -65,7 +76,7 @@ a {
 	padding: 5px;
 }
 
-#table_link:hover {
+.table_link:hover {
 	background: #c8c8c8;
 }
 
@@ -92,4 +103,38 @@ a {
 #refresh:disabled img{
 	transition: 100s;
 	transform: rotate(36000deg);
+}
+
+.auto-complete {
+	position: absolute;
+	z-index: 100;
+	background: white;
+	border: 1px solid black;
+	border-radius: 0 0 5px 5px;
+	box-shadow: 4px 7px 12px -4px;
+}
+
+.auto-complete > div {
+	margin: 0;
+	padding: 3px;
+	text-wrap: nowrap;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.auto-complete > div:last-child {
+	border-radius: 0 0 5px 5px;
+}
+
+.auto-complete > div:hover {
+	background: #ebebeb;
+	cursor: pointer;
+}
+
+.auto-complete > div > p {
+	margin: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }

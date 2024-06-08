@@ -34,10 +34,10 @@ tableIdInput.addEventListener("input", async (e) => {
 
 			tableLink.href = `https://docs.google.com/spreadsheets/d/${match[0]}/`;
 			tableLink.innerHTML = info.title;
-			tableLink.style.color = "black";
+			tableLink.style.color = "green";
 			tableLink.style.pointerEvents = "all";
 
-			addOrUpdateId(match[0]);
+			addOrUpdateId(match[0], info);
 			TABLE_ID = match[0];
 
 			listSelect.replaceChildren(...info.lists.map(sheet => new Option(sheet, sheet)));
@@ -52,19 +52,20 @@ tableIdInput.addEventListener("input", async (e) => {
 		}
 	}else {
 		tableIdInput.style.color = "black";
-		tableLink.href = "";
+		tableLink.href = "#";
 		tableLink.style.color = "red";
 		tableLink.style.pointerEvents = "none";
+		tableLink.innerHTML = "";
 	}
 });
 
 if (localStorage.getItem('ids')) {
 	const ids = JSON.parse(localStorage.getItem('ids'));
-	let max = ['', 0];
-	for (const id of Object.entries(ids)) {
-		if(id[1] > max[1]) max = id;
+	let max = {last_access: 0, title: ""};
+	for (const info of Object.values(ids)) {
+		if(info.last_access > max.last_access) max = info;
 	}
-	tableIdInput.value = max[0];
+	tableIdInput.value = max.id || "";
 }
 
 listsRefresh.addEventListener("click", async (e) => {
