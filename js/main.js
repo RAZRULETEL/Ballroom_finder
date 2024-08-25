@@ -23,7 +23,7 @@ let TABLE_ID = "";
 let authInterval;
 
 tableIdInput.addEventListener("input", async (e) => {
-	const match = e.currentTarget.value.match(/(?<=docs\.google\.com\/spreadsheets\/d\/)[\w\d]+(?=\/)/) || e.currentTarget.value.match(/^[\w\d]{44}$/i);
+	const match = e.currentTarget.value.match(/(?<=docs\.google\.com\/spreadsheets\/d\/)[^/]+(?=\/)/) || e.currentTarget.value.match(/^[^/]{44}$/i);
 	listSelect.disabled = true;
 	if (match) {
 		tableIdInput.disabled = true;
