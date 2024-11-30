@@ -177,7 +177,7 @@ async function handleRunClick(e){
 				progressBar.value = '100';
 				resolve();
 			}
-		}, 250);
+		}, 50);
 		count = await listNames((e) => {
 			count += e.length;
 			requestQueue.push(...e);
